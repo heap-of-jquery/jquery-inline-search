@@ -24,11 +24,13 @@ matchElement: 'tr' // the parent element to hide/display on (probably a parent o
 
 Here I have run the following on a Stackoverflow listings page to put a search box (and searched for IE, hiding all non-IE related listings) on the sidebar related list:
 
+```javascript
 $(".related").inlineSearch("create", {
 	header:$('#h-related'), 		// use the header (prepended, it would look better if it was appended or styled here)
 	searchPath:['div.spacer>a'], 	// the elements we want to match are in the .related list inside a div and an immediate anchor
 	matchElement:'div.spacer'		// the parent we want to match/hide/display is the div.spacer
 });
+```
 
 ## Known Issues
 * We only support one-layer of search path hide/show at the moment. This is a gotcha likely to catch many people. This means its good for hiding rows in tables, but not anything deeper (say tables in tables, or really any more structure than one deep)... around lines 55 and 56, I invite pull requests that fix this.
