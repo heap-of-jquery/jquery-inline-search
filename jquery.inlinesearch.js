@@ -23,6 +23,9 @@ limitations under the License.
 	};
 
 	var methods = {
+//		reclass: function() {
+//		},
+
 		create: function(options) {
 			var defaults = {
 				icon: false, // $("<div>").attr( {"class":"icon-search","type":"text"} ),
@@ -31,51 +34,65 @@ limitations under the License.
 				header: false,	// optional location to embed the form stuff.
 				list: false,	// non-optional, the list to be filtered
 				searchPath: ['tr>td'], // an array of paths (from the list) to use as "potential matches"
-				matchElement: 'tr'	
+				matchElement: 'tr',
+//				filterBy: null	
 			}, settings = $.extend(defaults, options);
-	
-			if(!list)	// if not specified, takes the selector message.
-				list = $(this);
+
+
+			if(!settings.list)	// if not specified, takes the selector message.
+				settings.list = $(this);
 
 			var $searchForm = $(settings.form).append(settings.input);
+			if(typeof settings.list.data("inline-search") != 'undefined')
+				return false;
+
 			if(settings.icon)
 				$searchForm.append(settings.icon);
+//			$searchForm.append(buildFilterBox(settings));
 
-			if(settings.header)	// embed the search form
-				$searchForm.prependTo(settings.header);
-			else
+			if(settings.header)	// embed the search form 
+			{
+				settings.header.prepend($searchForm);
+			}
+			else {
+				// TODO: test this.
 				$searchForm.before(settings.list);
+			}
 
-			settings.list.data("inline-search", {form: $searchForm});
+			settings.list.data("inline-search", {form: $searchForm, settings: settings});
 			settings.input.bind( "change.inline-search", function() {
-				var string = $(this).val();
-				if(string) {
+				var str = $(this).val();
+				if(str) {
 					var $results = [];
 					for (var i in settings.searchPath) {
 						// known issue here, .parent means it only supports the immediate parent as the matchElement... should use
 						// parents and then filter out the closest one.
 
-						settings.list.find( settings.searchPath[i] + ":not(:isicontains(" + string +"))").parent( settings.matchElement ).slideUp();
+						settings.list.find( settings.searchPath[i] + ":not(:isicontains(" + str +"))").parent( settings.matchElement ).slideUp();
 						$results.push(
-							settings.list.find( settings.searchPath[i] + ":isicontains(" + string +")")
+							settings.list.find( settings.searchPath[i] + ":isicontains(" + str +")")
 						);
 					}
 
 					for( var i in $results ) {
 						$results[i].parent( settings.matchElement ).slideDown();	
 					}
+					
 				} else {
 					// nothing searched, undo all hidden elements
 					settings.list.find(settings.matchElement).slideDown();
 				}
+				
 			} ).bind("keyup.inline-search", function() { 
 				// known issue here, this fires too often and makes it slow. cancel previous fires or only fire after n ms without a keypress.
 				$(this).change(); 
 			});
+			$("<style type='text/css'>.filtered-out { display:none; }</style>").appendTo("head");
 		},
 
 		destroy: function() {
 			$(this).data("inline-search")['form'].remove();
+			$(this).removeData("inline-search");
 		}
 	}
 	
